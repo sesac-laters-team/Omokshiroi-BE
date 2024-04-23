@@ -17,7 +17,14 @@ function socketHandler(server) {
         });
 
         // 클라이언트 연결 해제
-        console.log("socket connection success");
+        // console.log("socket connection success");
+
+
+        // [WaitingRoom Socket]
+        // 방 만들기
+        socket.on("createRoom", (title) => {
+            console.log(`${socket.id}의 제목은 ${title}입니다.`)
+        });
     });
 }
 
