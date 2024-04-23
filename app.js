@@ -20,9 +20,14 @@ sequelize
     .sync({ force: false })
     .then(() => {
         app.listen(process.env.PORT, () => {
-            console.log("server open");
+            console.log("db connected");
         });
     })
     .catch((err) => {
         console.log(err);
     });
+
+// 소켓 서버 설정
+server.listen(process.env.PORT_SOCKET, () => {
+    console.log("socket server open");
+});
