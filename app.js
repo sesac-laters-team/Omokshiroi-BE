@@ -8,14 +8,20 @@ const server = http.createServer(app);
 const socketHandler = require("./sockets/index");
 const cors = require("cors");
 require("dotenv").config();
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./swagger"); // 수정된 부분
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 socketHandler(server);
+
 // 라우터 설정
 app.use("/api-server", router);
 app.use("/api-server2", router2);
+
+// 스웨거 설정
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // 시퀄라이즈
 sequelize

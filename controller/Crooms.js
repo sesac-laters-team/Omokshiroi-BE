@@ -5,7 +5,7 @@ const { roomsModel } = require("../models");
 exports.getAllRooms = async (req, res) => {
     try {
         const Rooms = await roomsModel.findAll();
-        res.json(Rooms);
+        res.status(200).json(Rooms);
     } catch (error) {
         res.status(500).send("server error");
     }
@@ -26,10 +26,9 @@ exports.createRoom = async (req, res) => {
         });
 
         if (isExist)
-            return res.json({
+            return res.status(404).json({
                 isSuccess: false,
                 msg: "이미 존재하는 방 이름입니다.",
-                data: null,
             });
 
         // 방 생성
@@ -39,7 +38,7 @@ exports.createRoom = async (req, res) => {
             timer_second: timer,
         });
 
-        res.json({
+        res.status(200).json({
             isSuccess: true,
             msg: "방 생성 성공",
             data: newRoom,
@@ -111,7 +110,7 @@ exports.enterRoom = async (req, res) => {
             count.creator_user === nickname ||
             count.guest !== null
         )
-            return res.json({
+            return res.status(404).json({
                 isSuccess: false,
                 msg: "방이 가득 찼거나, 이미 만든 방이 있습니다.",
                 data: null,
@@ -129,7 +128,7 @@ exports.enterRoom = async (req, res) => {
                 },
             }
         );
-        res.json({
+        res.status(200).json({
             isSuccess: true,
             msg: "입장 성공",
             data: updateCount,
@@ -159,7 +158,7 @@ exports.leaveRoom = async (req, res) => {
             count.creator_user === nickname ||
             count.guest === null
         )
-            return res.json({
+            return res.status(404).json({
                 isSuccess: false,
                 msg: "방장은 퇴장할 수 없거나 참여인원은 0명이 될 수 없습니다.",
                 data: null,
@@ -177,7 +176,7 @@ exports.leaveRoom = async (req, res) => {
                 },
             }
         );
-        res.json({
+        res.status(200).json({
             isSuccess: true,
             msg: "퇴장 성공",
             data: updateCount,
