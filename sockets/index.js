@@ -1,91 +1,108 @@
 const socketIO = require("socket.io");
 
 function socketHandler(server) {
-    const io = socketIO(server, {
-        cors: {
-            origin: "http://localhost:3000",
-        },
-    });
+    const io = socketIO(server, { cors: { origin: "http://localhost:3000" } });
+    let publicRoom = [{
+        name: "AlphaRoom",
+        blackPlayer: "player1_id",
+        whitePlayer: "player2_id",
+        takes: [
+            { x: 3, y: 4, player: "black" },
+            { x: 4, y: 5, player: "white" },
+            { x: 5, y: 6, player: "black" },
+        ]
+    }];
 
-    let rooms = {};  // 방 정보를 저장하는 객체
+    function logEvent(event, socket) {
+        console.log(`Socket event: ${event} from ${socket.id}`);
+    }
+
+    function getRoomByName(name) {
+        return publicRoom.find(room => room.name === name);
+    }
+
+    function emitRoomEvent(room, event, data) {
+        io.in(room.name).emit(event, data);
+    }
 
     io.on("connection", (socket) => {
-        console.log("클라이언트 아이디 ::: ", socket.id);
-        // [WaitingRoom Socket]
-        // 방 만들기
-        socket.on("createRoom", (title) => {
+        socket.onAny(event => logEvent(event, socket));
 
-            console.log(`${socket.id}의 제목은 ${title}입니다.`)
-            // const roomId = socket.id; // 방 ID를 소켓 ID로 설정
-            // rooms[roomId] = {
-            //     title: title,
-            //     board: Array(19).fill(Array(19).fill(null)), // 19x19 게임 보드 초기화
-            //     turn: 'black', // 시작 차례
-            //     players: [socket.id] // 플레이어 목록
-            // };
-            // socket.join(roomId);
-           
-            // io.to(roomId).emit('roomCreated', rooms[roomId]);
-            
-       
+        socket.on("room_list", () => {
+            socket.emit("room_list", publicRoom);
+        });
+
+        socket.on("room_new", (name) => {
+            name = name.trim();
+            if (socket.rooms.size > 1 || getRoomByName(name)) {
+                socket.emit("error", "Cannot join multiple rooms or room already exists.");
+                return;
+            }
+            let roomInfo = { name, blackPlayer: "", whitePlayer: "", takes: [] };
+            publicRoom.push(roomInfo);
+            emitRoomEvent(io.sockets, "room_list", publicRoom);
+            socket.join(name);
+            emitRoomEvent(io.to(name), "message", `${socket.id} has entered the room.`);
+        });
+
+        socket.on("room_enter", (name) => {
+            if (socket.rooms.size > 1 || !getRoomByName(name)) {
+                socket.emit("error", "Already in a room or room does not exist.");
+                return;
+            }
+            socket.join(name);
+            emitRoomEvent(io.to(name), "message", `${socket.id} has entered the room.`);
+        });
+
+        socket.on("room_leave", () => {
+            const rooms = Array.from(socket.rooms).slice(1);
+            rooms.forEach(name => {
+                socket.leave(name);
+                emitRoomEvent(io.to(name), "message", `${socket.id} has left the room.`);
+            });
+        });
+
+        socket.on("player_change", (color) => {
+            const room = getRoomByName(Array.from(socket.rooms)[1]);
+            if (!room || room[color + "Player"]) {
+                socket.emit("error", "Room does not exist or color already taken.");
+                return;
+            }
+            room[color + "Player"] = socket.id;
+            emitPlayerChange(room);
+        });
         
+        socket.on("start_game", () => {
+            const room = getRoomByName(Array.from(socket.rooms)[1]);
+            if (!room || room.blackPlayer === "" || room.whitePlayer === "") {
+                socket.emit("error", "Cannot start game, players are not ready.");
+                return;
+            }
+        
+            // 게임 시작 로직 추가
+            startGameLogic(room);
         });
+        
+        function startGameLogic(room) {
+            // 플레이어에게 차례 알려주기
+            emitRoomEvent(io.to(room.name), "player_select");
+        }
+        
 
-        // 방에 참가하기
-        socket.on("joinRoom", (roomId) => {
-            socket.join(roomId);
-            rooms[roomId].players.push(socket.id);
-            io.to(roomId).emit('joinedRoom', {roomId, players: rooms[roomId].players});
-            console.log(`${socket.id}가 '${roomId}' 방에 참가했습니다.`);
-        });
-
-        // 방 나가기
-        socket.on("leaveRoom", (roomId) => {
-            socket.leave(roomId);
-            rooms[roomId].players = rooms[roomId].players.filter(id => id !== socket.id);
-            if (rooms[roomId].players.length === 0) {
-                delete rooms[roomId];
-                console.log(`방 '${roomId}'이 비었습니다.`);
-            } else {
-                io.to(roomId).emit('leftRoom', socket.id);
+        socket.on("player_selected", (coord) => {
+            const room = getRoomByName(Array.from(socket.rooms)[1]);
+            if (!room || room.takes.find(t => t.x === coord.x && t.y === coord.y)) {
+                socket.emit("error", "Room does not exist or position already taken.");
+                return;
+            }
+            room.takes.push(coord);
+            if (checkOmokCompleted(coord, room.takes)) {
+                emitRoomEvent(io.to(room.name), "game_end", room.takes.length % 2 === 0 ? "black" : "white");
             }
         });
 
-       // 게임 진행
-        socket.on('move', ({ x, y, player, roomId }) => {
-        const room = rooms[roomId]; // 방 ID에 따라 방 정보를 가져옴
-        if (room && room.board[x][y] === null && room.turn === player) {
-        room.board[x][y] = player; // 보드 업데이트
-        room.turn = (player === 'black' ? 'white' : 'black'); // 턴 교체
-        io.to(roomId).emit('game update', { board: room.board, turn: room.turn });
-    }
-});
-
-        // 무르기 기능
-        socket.on('undo', ({ roomId }) => {
-             const room = rooms[roomId];
-            if (room && room.history.length > 0) {
-                 const prevState = room.history.pop(); // 이전 상태를 히스토리에서 꺼냄
-             room.board = prevState; // 보드 상태를 이전 상태로 되돌림
-                room.turn = (room.turn === 'black' ? 'white' : 'black'); // 턴도 이전으로 되돌림
-                 io.to(roomId).emit('game update', { board: room.board, turn: room.turn });
-    }
-});
-          
-
-        // 연결 해제
-        socket.on("disconnect", () => {
-            console.log(`${socket.id} 연결 해제`);
-            // 모든 방에서 플레이어 제거
-            for (let roomId in rooms) {
-                rooms[roomId].players = rooms[roomId].players.filter(id => id !== socket.id);
-                if (rooms[roomId].players.length === 0) {
-                    delete rooms[roomId];
-                    console.log(`방 '${roomId}'이 비었습니다.`);
-                } else {
-                    io.to(roomId).emit('leftRoom', socket.id);
-                }
-            }
+        socket.on("disconnecting", () => {
+            console.log(`Socket ${socket.id} is disconnecting.`);
         });
     });
 }
