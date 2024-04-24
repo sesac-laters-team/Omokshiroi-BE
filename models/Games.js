@@ -25,10 +25,6 @@ const gamesModel = (Sequelize, DataTypes) => {
                 type: DataTypes.STRING(255),
                 allowNull: true,
             },
-            timer_second: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-            },
         },
         {
             tableName: "games",
