@@ -2,6 +2,12 @@
 -- games
 desc games;
 select * from games;
-INSERT INTO games (room_id, current_player, game_status, white_player, black_player, timer_second) VALUES (1, 'User A', 'wait', NULL, NULL, 60);
-INSERT INTO games (room_id, current_player, game_status, white_player, black_player, timer_second) VALUES (2, 'User B', 'wait', NULL, NULL, 60);
-INSERT INTO games (room_id, current_player, game_status, white_player, black_player, timer_second) VALUES (3, 'User C', 'wait', NULL, NULL, 60);
+INSERT INTO games
+(room_id, current_player, game_status, white_player, black_player)
+VALUES (1, 'UserA', 'wait', NULL, NULL);
+INSERT INTO games
+(room_id, current_player, game_status, white_player, black_player)
+VALUES (2, 'UserB', 'wait', NULL, NULL);
+INSERT INTO games
+(room_id, current_player, game_status, white_player, black_player)
+VALUES (3, 'UserC', 'ingame', NULL, NULL);

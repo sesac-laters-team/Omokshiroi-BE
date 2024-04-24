@@ -18,10 +18,19 @@ const roomsModel = (Sequelize, DataTypes) => {
                 allowNull: false,
                 unique: true,
             },
+            guest: {
+                type: DataTypes.STRING(255),
+                allowNull: true,
+                unique: true,
+            },
             player_count: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 1,
+            },
+            timer_second: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
             },
         },
         {
