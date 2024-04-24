@@ -1,31 +1,30 @@
-const usersModel = (Sequelize, DataTypes) => {
+const boardsModel = (Sequelize, DataTypes) => {
     const model = Sequelize.define(
-        "test_table_users",
+        "boards",
         {
-            users_id: {
+            board_id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
                 autoIncrement: true,
                 allowNull: false,
             },
-            users_email: {
-                type: DataTypes.STRING(255),
+            move_count: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
-                unique: true,
+                defaultValue: 0,
             },
-            users_password: {
-                type: DataTypes.STRING(255),
+            position: {
+                type: DataTypes.JSON,
                 allowNull: false,
             },
         },
         {
-            tableName: "test_table_users",
+            tableName: "boards",
             timestamps: false,
             freezeTableName: true,
-            // underscored: true,
         }
     );
     return model;
 };
 
-module.exports = usersModel;
+module.exports = boardsModel;
