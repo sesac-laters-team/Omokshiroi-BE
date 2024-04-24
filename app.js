@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const router = require("./routes/router");
+const router2 = require("./routes/router2");
 const { sequelize } = require("./models");
 const http = require("http");
 const server = http.createServer(app);
@@ -14,6 +15,7 @@ app.use(cors());
 socketHandler(server);
 // 라우터 설정
 app.use("/api-server", router);
+app.use("/api-server2", router2);
 
 // 시퀄라이즈
 sequelize

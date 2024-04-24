@@ -1,7 +1,7 @@
 const { roomsModel } = require("../models");
 
 // 방 목록 요청 API
-// GET /api-server/rooms
+// GET /api-server2/rooms
 exports.getAllRooms = async (req, res) => {
     try {
         const Rooms = await roomsModel.findAll();
@@ -12,7 +12,7 @@ exports.getAllRooms = async (req, res) => {
 };
 
 // 방 생성 요청 API
-// POST /api-server/room
+// POST /api-server2/room
 // require (title, timer, nickname)
 exports.createRoom = async (req, res) => {
     const { title, timer, nickname } = req.body;
@@ -50,7 +50,7 @@ exports.createRoom = async (req, res) => {
 };
 
 // 방 삭제 요청 API
-// DELETE /api-server/room
+// DELETE /api-server2/room
 // require (roomId,nickname)
 exports.deleteRoom = async (req, res) => {
     const { roomId, nickname } = req.body;
@@ -94,7 +94,7 @@ exports.deleteRoom = async (req, res) => {
 };
 
 // 방 입장 요청 API
-// PATCH /api-server/room/enter
+// PATCH /api-server2/room/enter
 // require (roomId, nickname)
 exports.enterRoom = async (req, res) => {
     const { roomId, nickname } = req.body;
@@ -140,7 +140,7 @@ exports.enterRoom = async (req, res) => {
 };
 
 // 방 퇴장 요청 API
-// PATCH /api-server/room/leave
+// PATCH /api-server2/room/leave
 // 게스트가 브라우저를 종료하거나 나가기를 할때 요청할 API
 // require (roomId, nickname)
 exports.leaveRoom = async (req, res) => {
