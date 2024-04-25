@@ -44,7 +44,6 @@ function socketHandler(server) {
                 console.log(
                     `${socket.id}의 제목은 ${title}, 시간은 ${timer}, 비밀번호는 ${roomPw}, 방 아이디는 ${roomId}입니다.`
                 );
-                console.log(`rooms의 정보: ${rooms}`);
 
                 // 모두에게 방 리스트 전달
                 io.emit(
@@ -64,11 +63,11 @@ function socketHandler(server) {
         // 방에 참가하기
         socket.on("joinRoom", (roomId) => {
             socket.join(roomId);
-            rooms[roomId].players.push(socket.id);
-            io.to(roomId).emit("joinedRoom", {
-                roomId,
-                players: rooms[roomId].players,
-            });
+            // rooms[roomId].players.push(socket.id);
+            // io.to(roomId).emit("joinedRoom", {
+            //     roomId, // 만든 사람 socket.id
+            //     players: rooms[roomId].players, // 만든 사람 + 참여한 사람
+            // });
             console.log(`${socket.id}가 '${roomId}' 방에 참가했습니다.`);
         });
 
